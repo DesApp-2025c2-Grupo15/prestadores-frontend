@@ -3,10 +3,6 @@ Una aplicación frontend construida con **React**, **Vite** y **Ant Design**, qu
 
 ## Comenzar
 
-### Prerrequisitos
-- Node.js 
-- npm o yarn
-
 ### Instalación
 Clonar el repositorio e instalar dependencias:
 
