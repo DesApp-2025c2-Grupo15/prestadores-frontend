@@ -40,8 +40,3 @@ prestadores-frontend/
 ├── package.json                  # Dependencias del proyecto
 └── README.md                     # Documentación del proyecto
 ```
-
-### Rutas
-/ → Página de Login
-/dashboard → Panel de control (post login)
-
