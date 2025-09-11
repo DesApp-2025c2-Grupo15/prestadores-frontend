@@ -3,10 +3,6 @@ Una aplicación frontend construida con **React**, **Vite** y **Ant Design**, qu
 
 ## Comenzar
 
-### Prerrequisitos
-- Node.js 
-- npm o yarn
-
 ### Instalación
 Clonar el repositorio e instalar dependencias:
 
@@ -20,8 +16,10 @@ npm install
 Para ejecutar: npm run dev
 La aplicación se levantará en el puerto 5173 (por defecto de Vite):
 
+
 ### Desarrollo
 Estructura del Proyecto
+
 ```plaintext
 prestadores-frontend/
 ├── src/
@@ -37,6 +35,8 @@ prestadores-frontend/
 ├── package.json               # Dependencias del proyecto
 └── README.md                  # Documentación del proyecto
 ```
+
 ### Rutas
 / → Página de Login
 /dashboard → Panel de control (post login)
+
