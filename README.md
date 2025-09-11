@@ -22,6 +22,7 @@ La aplicación se levantará en el puerto 5173 (por defecto de Vite):
 
 ### Desarrollo
 Estructura del Proyecto
+```plaintext
 prestadores-frontend/
 ├── src/
 │   ├── components/
@@ -35,7 +36,7 @@ prestadores-frontend/
 │   └── main.jsx               # Punto de entrada de la aplicación
 ├── package.json               # Dependencias del proyecto
 └── README.md                  # Documentación del proyecto
-
+```
 ### Rutas
 / → Página de Login
 /dashboard → Panel de control (post login)
