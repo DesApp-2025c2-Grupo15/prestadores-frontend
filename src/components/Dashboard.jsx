@@ -10,6 +10,9 @@ const Dashboard = () => {
     <Layout style={{ minHeight: "100vh", width: "100vw" }}>
       <Sider width={200} style={{ background: "#fff",paddingTop: "40px" }}>
         <Menu mode="inline" defaultSelectedKeys={["pacientes"]} style={{ height: "100%" }}>
+          <Menu.Item key="inicio" icon={<FileTextOutlined />}>
+            <Link to="inicio">Inicio</Link> 
+          </Menu.Item>
           <Menu.Item key="turnos" icon={<FileTextOutlined />}>
             <Link to="turnospendientes">Turnos Pendientes</Link> 
           </Menu.Item>
