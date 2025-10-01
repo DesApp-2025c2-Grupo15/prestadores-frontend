@@ -1,80 +1,74 @@
-import React, { useEffect, useState } from "react";
-import { Table, Button, Drawer, Spin } from "antd";
-import { EyeOutlined } from "@ant-design/icons";
+import React, { useEffect, useState } from "react"
+import { Table, Button } from "antd"
+import { EyeOutlined } from "@ant-design/icons"
+import { getAfiliados, getAfiliadoById } from "../services/afiliados"
+import Lista from "./Lista"
 
 const Pacientes = () => {
-  const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [detalle, setDetalle] = useState(null);
-  const [open, setOpen] = useState(false);
+  const [data, setData] = useState([])
+  const [loading, setLoading] = useState(false)
+  const [detalle, setDetalle] = useState(null)
+  const [open, setOpen] = useState(false)
+  const [selectedRowKeys, setSelectedRowKeys] = useState([])
 
-  // Cargar lista de afiliados
+  const [pagination, setPagination] = useState({ current: 1, pageSize: 10, total: 0 })
+
   useEffect(() => {
-    const fetchAfiliados = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch("http://localhost:8080/v1/prestadores/afiliados");
-        const result = await response.json();
-        setData(result);
-      } catch (error) {
-        console.error("Error al traer afiliados:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+    fetchData(pagination.current, pagination.pageSize)
+  }, [])
 
-    fetchAfiliados();
-  }, []);
+  const fetchData = async (page, pageSize) => {
+    try {
+      setLoading(true)
+      const result = await getAfiliados()
+      setData(result)
+      setPagination({ ...pagination, total: result.length })
+    } catch (error) {
+      console.error("Error al traer afiliados:", error)
+    } finally {
+      setLoading(false)
+    }
+  }
 
-  // Ver detalle de un afiliado
   const showDetalle = async (id) => {
     try {
-      setLoading(true);
-      const response = await fetch(`http://localhost:8080/v1/prestadores/afiliados/${id}`);
-      const result = await response.json();
-      setDetalle(result);
-      setOpen(true);
+      setLoading(true)
+      const result = await getAfiliadoById(id)
+      setDetalle(result)
+      setOpen(true)
     } catch (error) {
-      console.error("Error al traer detalle del afiliado:", error);
+      console.error("Error al traer detalle:", error)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const columns = [
-    {
-      title: "DNI",
-      dataIndex: "dni",
-      key: "dni",
-    },
-    {
-      title: "Nombre",
-      render: (_, record) => `${record.nombre} ${record.apellido}`,
-      key: "nombre",
-    },
-    {
-      title: "Plan Médico",
-      dataIndex: "planMedico",
-      key: "planMedico",
-    },
-    {
-      title: "Titular",
-      dataIndex: "titular",
-      key: "titular",
-      render: (val) => (val ? "Sí" : "No"),
-    },
+    { title: "DNI", dataIndex: "dni", key: "dni" },
+    { title: "Nombre", render: (_, record) => `${record.nombre} ${record.apellido}`, key: "nombre" },
+    { title: "Plan Médico", dataIndex: "planMedico", key: "planMedico" },
+    { title: "Titular", dataIndex: "titular", key: "titular", render: val => (val ? "Sí" : "No") },
     {
       title: "Detalle",
       key: "detalle",
       render: (_, record) => (
-        <Button
-          type="text"
-          icon={<EyeOutlined />}
-          onClick={() => showDetalle(record.id)}
-        />
+        <Button type="text" icon={<EyeOutlined />} onClick={() => showDetalle(record.id)} />
       ),
     },
-  ];
+  ]
+
+  const rowSelection = {
+    selectedRowKeys,
+    onChange: (keys) => {
+      setSelectedRowKeys(keys)
+      console.log("Filas seleccionadas:", keys)
+    },
+  }
+
+  const handleTableChange = (pag) => {
+    setPagination(pag)
+    fetchData(pag.current, pag.pageSize)
+  }
 
   return (
     <div style={{ padding: 16 }}>
@@ -85,44 +79,47 @@ const Pacientes = () => {
         columns={columns}
         dataSource={data}
         loading={loading}
-        pagination={{ pageSize: 10 }}
+        pagination={{
+          current: pagination.current,
+          pageSize: pagination.pageSize,
+          total: pagination.total,
+          showSizeChanger: true,
+          pageSizeOptions: ["5", "10", "20", "50"],
+        }}
+        onChange={handleTableChange}
+        rowSelection={rowSelection}
         bordered
       />
 
-      <Drawer
-        title="Detalle Afiliado"
+      <Lista
         open={open}
         onClose={() => setOpen(false)}
-        width={480}
-      >
-        {loading ? (
-          <Spin />
-        ) : detalle ? (
-          <div>
-            <p><b>Nro Afiliado:</b> {detalle.nroAfiliado}</p>
-            <p><b>DNI:</b> {detalle.dni}</p>
-            <p><b>Nombre:</b> {detalle.nombre} {detalle.apellido}</p>
-            <p><b>Plan Médico:</b> {detalle.planMedico}</p>
-            <p><b>Email:</b> {detalle.email}</p>
-            <p><b>Teléfono:</b> {detalle.telefono}</p>
-            <p><b>Ciudad:</b> {detalle.ciudad}</p>
-            <p><b>Provincia:</b> {detalle.provincia}</p>
-
-            <h4>Grupo Familiar</h4>
-            <ul>
-              {detalle.grupoFamiliar.map((g) => (
-                <li key={g.id}>
-                  {g.nombre} {g.apellido} — DNI: {g.dni} — {g.planMedico}
-                </li>
-              ))}
-            </ul>
-          </div>
-        ) : (
-          <p>No hay datos del afiliado.</p>
-        )}
-      </Drawer>
+        loading={loading}
+        detalle={detalle}
+        fields={[
+          { key: "nroAfiliado", label: "Nro Afiliado" },
+          { key: "dni", label: "DNI" },
+          { key: "nombre", label: "Nombre" },
+          { key: "apellido", label: "Apellido" },
+          { key: "planMedico", label: "Plan Médico" },
+          { key: "email", label: "Email" },
+          { key: "telefono", label: "Teléfono" },
+          { key: "ciudad", label: "Ciudad" },
+          { key: "provincia", label: "Provincia" },
+          {
+            key: "grupoFamiliar",
+            label: "Grupo Familiar",
+            subFields: [
+              { key: "nombre" },
+              { key: "apellido" },
+              { key: "dni" },
+              { key: "planMedico" },
+            ],
+          },
+        ]}
+      />
     </div>
-  );
-};
+  )
+}
 
-export default Pacientes;
+export default Pacientes

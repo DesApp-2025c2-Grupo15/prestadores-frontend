@@ -1,7 +1,7 @@
-import React from "react";
-import { Row, Col, Card, Typography, Calendar } from "antd";
+import React from "react"
+import { Row, Col, Card, Typography, Calendar } from "antd"
 
-const { Title, Text } = Typography;
+const { Title, Text } = Typography
 
 const Inicio = () => {
   return (
@@ -76,7 +76,7 @@ const Inicio = () => {
         </Col>
       </Row>
     </div>
-  );
-};
+  )
+}
 
-export default Inicio;
+export default Inicio

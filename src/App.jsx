@@ -1,5 +1,5 @@
 import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom"
 import Login from "./components/LogIn"
 import Dashboard from "./components/Dashboard"
 import Solicitudes from "./components/Solicitudes"
@@ -12,7 +12,10 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Login />} />
+        {/* Redirige automáticamente a /login al entrar a / */}
+        <Route path="/" element={<Navigate to="/login" replace />} />
+
+        <Route path="/login" element={<Login />} />
         <Route path="/dashboard" element={<Dashboard />}>
           <Route index element={<Pacientes />} /> 
           <Route path="inicio" element={<Inicio />} />
