@@ -17,3 +17,9 @@ export const getHistoriaClinica = async (id) => {
   const res = await axios.get(`${API_URL}/${id}/historia-clinica`)
   return res.data
 }
+
+export const getAfiliadoByDni = async (dni) => {
+  const res = await axios.get(API_URL) 
+  const afiliados = res.data
+  return afiliados.find((a) => String(a.dni) === String(dni))
+}

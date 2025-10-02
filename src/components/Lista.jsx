@@ -58,8 +58,8 @@ const Lista = ({ open, onClose, loading, detalle, fields }) => {
         extra={
           <Button
             style={{
-              backgroundColor: "#444",   // gris oscuro
-              color: "#fff",             // texto blanco
+              backgroundColor: "#444",   
+              color: "#fff",            
               border: "none"
             }}
             onClick={fetchHistoriaClinica}
