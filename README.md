@@ -3,7 +3,7 @@ Una aplicación frontend construida con **React**, **Vite** y **Ant Design**, qu
 
 ## Comenzar
 
-### Instalaciónn
+### Instalación
 Clonar el repositorio e instalar dependencias:
 
 ```bash
