@@ -55,14 +55,13 @@ const Reintegros = () => {
     { title: "Monto ($)", dataIndex: "monto", key: "monto" },
     { title: "Estado", dataIndex: "estado", render: e => <Tag color={color[e]}>{e}</Tag> },
     { title: "Fecha", dataIndex: "fechaCreacion", key: "fechaCreacion"},
-    {
-      title: "Acción",
-      render: (_, r) => (
-        <Button icon={<EyeOutlined />} onClick={() => showDetalle(r.id)}>
-          Ver
-        </Button>
-      ),
-    },
+    /*{
+              title: "Detalle",
+              key: "detalle",
+              render: (_, record) => (
+                <Button type="text" icon={<EyeOutlined />} onClick={() => showDetalle(record.id)} />
+              ),
+            },*/
   ]
 
   return (
