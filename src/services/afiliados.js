@@ -15,8 +15,10 @@ export const getAfiliadoById = async (id) => {
 
 export const getHistoriaClinica = async (id) => {
   const res = await axios.get(`${API_URL}/${id}/historia-clinica`)
+  console.log("Historia clínica cruda del afiliado", id, res.data)
   return res.data
 }
+
 
 export const getAfiliadoByDni = async (dni) => {
   const res = await axios.get(API_URL) 

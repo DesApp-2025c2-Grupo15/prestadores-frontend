@@ -24,9 +24,8 @@ const Login = () => {
   const onFinish = async (values) => {
     setLoading(true)
     try {
-      const data = await login(values.username) // 👈 solo username
+      const data = await login(values.username) 
       message.success("Inicio de sesión exitoso")
-      // Guardar username como "sesión"
       localStorage.setItem("user", data.username)
       navigate("/dashboard")
     } catch (err) {
