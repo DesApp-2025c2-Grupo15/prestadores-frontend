@@ -10,6 +10,7 @@ import Inicio from "./components/Inicio"
 import Recetas from "./components/Recetas"
 import Reintegros from "./components/Reintegros"
 import Autorizaciones from "./components/Autorizaciones"
+import Situaciones from "./components/Situaciones"
 
 
 function App() {
@@ -30,6 +31,8 @@ function App() {
           <Route path="recetas" element={<Recetas />} />
           <Route path="reintegros" element={<Reintegros />} />
           <Route path="autorizaciones" element={<Autorizaciones />} />
+          <Route path="situaciones" element={<Situaciones />} />
+
         </Route>
       </Routes>
     </Router>
