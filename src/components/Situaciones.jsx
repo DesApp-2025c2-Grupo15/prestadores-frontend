@@ -8,6 +8,9 @@ import {
   modificarSituacion,
   eliminarSituacion,
 } from "../services/situaciones"
+import { Collapse } from "antd"
+const { Panel } = Collapse
+
 
 const Situaciones = () => {
   const [data, setData] = useState([])
@@ -89,23 +92,145 @@ const Situaciones = () => {
   }
 
   const columns = [
-    { title: "DNI", dataIndex: "dni", key: "dni" },
-    { title: "Nombre", render: (_, r) => `${r.nombre} ${r.apellido}` },
-    { title: "Plan Médico", dataIndex: "planMedico", key: "planMedico" },
-    { title: "Titular", render: (_, r) => (r.titular ? "Sí" : "No") },
-    {
-      title: "Acción",
-      render: (_, r) => (
-        <Button
-          type="primary"
-          icon={<EyeOutlined />}
-          onClick={() => verSituaciones(r)}
-        >
-          Gestionar
-        </Button>
-      ),
-    },
-  ]
+  { title: "DNI", dataIndex: "dni", key: "dni" },
+  { title: "Nombre", render: (_, r) => `${r.nombre} ${r.apellido}` },
+  { title: "Plan Médico", dataIndex: "planMedico", key: "planMedico" },
+  { title: "Titular", render: (_, r) => (r.titular ? "Sí" : "No") },
+  {
+    title: "Ver grupo familiar",
+    key: "ver",
+    render: (_, record) => (
+      <Button
+        type="default"
+        onClick={() => toggleExpand(record.id)}
+      >
+        Ver
+      </Button>
+    ),
+  },
+  {
+    title: "Acción",
+    render: (_, r) => (
+      <Button
+        type="primary"
+        icon={<EyeOutlined />}
+        onClick={() => verSituaciones(r)}
+      >
+        Gestionar
+      </Button>
+    ),
+  },
+]
+
+const [expandedRowKeys, setExpandedRowKeys] = useState([])
+
+const toggleExpand = (id) => {
+  setExpandedRowKeys((prev) =>
+    prev.includes(id) ? prev.filter((key) => key !== id) : [...prev, id]
+  )
+}
+
+return (
+  <div style={{ padding: 16 }}>
+    <h3 style={{ marginBottom: 16 }}>Situaciones Terapéuticas</h3>
+
+    <Table
+      rowKey="id"
+      columns={columns}
+      dataSource={data}
+      loading={loading}
+      pagination={{ pageSize: 10 }}
+      bordered
+      expandable={{
+        expandedRowRender: (afiliado) =>
+          afiliado.grupoFamiliar && afiliado.grupoFamiliar.length > 0 ? (
+            <ul style={{ margin: 0, paddingLeft: 20 }}>
+              {afiliado.grupoFamiliar.map((miembro) => (
+                <li key={miembro.id}>
+                   {miembro.nombre} {miembro.apellido} – {miembro.relacion}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p style={{ margin: 0 }}>No tiene grupo familiar registrado.</p>
+          ),
+        expandedRowKeys,
+        onExpand: (expanded, record) => toggleExpand(record.id),
+        showExpandColumn: false, //  oculta la flechita 
+      }}
+    />
+
+    {/* Modal de gestión */}
+    <Modal
+      open={open}
+      onCancel={() => setOpen(false)}
+      footer={null}
+      title={
+        selected
+          ? `Gestión: ${selected.nombre} ${selected.apellido}`
+          : "Situaciones Terapéuticas"
+      }
+    >
+      {loadingSituaciones ? (
+        <Spin />
+      ) : (
+        <>
+          {situaciones.length === 0 ? (
+            <p>No hay situaciones registradas.</p>
+          ) : (
+            situaciones.map((s) => (
+              <div
+                key={s.id}
+                style={{
+                  border: "1px solid #ddd",
+                  borderRadius: 8,
+                  padding: 10,
+                  marginBottom: 8,
+                }}
+              >
+                <b>{new Date(s.fechaInicio).toLocaleDateString()}</b> –{" "}
+                {s.descripcion || "Sin descripción"}{" "}
+                {s.fechaFin ? (
+                  <Tag color="default">Finalizada</Tag>
+                ) : (
+                  <Tag color="green">Activa</Tag>
+                )}
+                <div style={{ marginTop: 8 }}>
+                  <Button
+                    icon={<EditOutlined />}
+                    size="small"
+                    onClick={() => handleModificar(s.id)}
+                    style={{ marginRight: 8 }}
+                  >
+                    Modificar
+                  </Button>
+                  <Button
+                    icon={<DeleteOutlined />}
+                    danger
+                    size="small"
+                    onClick={() => handleEliminar(s.id)}
+                    style={{ marginRight: 8 }}
+                  >
+                    Eliminar
+                  </Button>
+                </div>
+              </div>
+            ))
+          )}
+          <div style={{ textAlign: "right", marginTop: 12 }}>
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={() => handleAlta(selected?.id)}
+            >
+              Añadir situación
+            </Button>
+          </div>
+        </>
+      )}
+    </Modal>
+  </div>
+)
 
   return (
     <div style={{ padding: 16 }}>
