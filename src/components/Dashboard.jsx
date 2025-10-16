@@ -1,6 +1,6 @@
 import React, { useState } from "react"
 import { Layout, Menu, Input, message, Card } from "antd"
-import { UserOutlined, CalendarOutlined, FileTextOutlined, SearchOutlined } from "@ant-design/icons"
+import { UserOutlined, CalendarOutlined, FileTextOutlined, SearchOutlined, MedicineBoxOutlined } from "@ant-design/icons"
 import { Link, Outlet } from "react-router-dom"
 import { getAfiliadoByDni } from "../services/afiliados"
 
@@ -33,7 +33,7 @@ const Dashboard = () => {
   return (
     <Layout style={{ minHeight: "100vh", width: "100vw" }}>
       {/* Sidebar */}
-      <Sider width={200} style={{ background: "#fff", paddingTop: "40px" }}>
+      <Sider width={250} style={{ background: "#fff", paddingTop: "40px" }}>
         <Menu mode="inline" defaultSelectedKeys={["inicio"]} style={{ height: "100%" }}>
           <Menu.Item key="inicio" icon={<FileTextOutlined />}>
             <Link to="inicio">Inicio</Link>
@@ -60,6 +60,11 @@ const Dashboard = () => {
               <Link to="autorizaciones">Autorizaciones</Link>
             </Menu.Item>
           </Menu.SubMenu>
+
+          <Menu.Item key="situaciones" icon={<MedicineBoxOutlined />}>
+            <Link to="situaciones">Situaciones Terapéuticas</Link>
+          </Menu.Item>
+
         </Menu>
       </Sider>
       
