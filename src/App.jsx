@@ -7,6 +7,10 @@ import Pacientes from "./components/Pacientes"
 import TurnosPendientes from "./components/TurnosPendientes"
 import Calendario from "./components/Calendario"
 import Inicio from "./components/Inicio"
+import Recetas from "./components/Recetas"
+import Reintegros from "./components/Reintegros"
+import Autorizaciones from "./components/Autorizaciones"
+
 
 function App() {
   return (
@@ -17,12 +21,15 @@ function App() {
 
         <Route path="/login" element={<Login />} />
         <Route path="/dashboard" element={<Dashboard />}>
-          <Route index element={<Pacientes />} /> 
+          <Route index element={<Inicio />} /> 
           <Route path="inicio" element={<Inicio />} />
           <Route path="pacientes" element={<Pacientes />} />
           <Route path="solicitudes" element={<Solicitudes />} />
           <Route path="turnospendientes" element={<TurnosPendientes />} />
           <Route path="calendario" element={<Calendario />} />
+          <Route path="recetas" element={<Recetas />} />
+          <Route path="reintegros" element={<Reintegros />} />
+          <Route path="autorizaciones" element={<Autorizaciones />} />
         </Route>
       </Routes>
     </Router>

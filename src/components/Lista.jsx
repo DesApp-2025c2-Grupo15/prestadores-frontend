@@ -1,32 +1,7 @@
-import { Card, Spin, Button } from "antd"
-import React, { useState, useEffect } from "react"
-import { getHistoriaClinica } from "../services/afiliados"
+import { Card, Spin } from "antd"
+import React from "react"
 
-const Lista = ({ open, onClose, loading, detalle, fields }) => {
-  const [historia, setHistoria] = useState(null)
-  const [loadingHistoria, setLoadingHistoria] = useState(false)
-  const [showHistoria, setShowHistoria] = useState(false)
-
-  // Limpiar historia cuando cambia el paciente o se cierra
-  useEffect(() => {
-    setHistoria(null)
-    setShowHistoria(false)
-  }, [detalle, open])
-
-  const fetchHistoriaClinica = async () => {
-    if (!detalle?.id) return
-    try {
-      setLoadingHistoria(true)
-      const data = await getHistoriaClinica(detalle.id)
-      setHistoria(data)
-      setShowHistoria(true)
-    } catch (err) {
-      console.error("Error al traer historia clínica:", err)
-    } finally {
-      setLoadingHistoria(false)
-    }
-  }
-
+const Lista = ({ open, onClose, loading, detalle, fields, title = "Detalle" }) => {
   if (!open) return null
 
   return (
@@ -45,9 +20,8 @@ const Lista = ({ open, onClose, loading, detalle, fields }) => {
       }}
       onClick={onClose}
     >
-      {/* Card de Detalle */}
       <Card
-        title="Detalle Afiliado"
+        title={title}
         style={{
           width: 600,
           maxHeight: "80vh",
@@ -55,19 +29,6 @@ const Lista = ({ open, onClose, loading, detalle, fields }) => {
           position: "relative",
         }}
         onClick={(e) => e.stopPropagation()}
-        extra={
-          <Button
-            style={{
-              backgroundColor: "#444",   
-              color: "#fff",            
-              border: "none"
-            }}
-            onClick={fetchHistoriaClinica}
-            loading={loadingHistoria}
-          >
-            Ver Historia Clínica
-          </Button>
-        }
       >
         {loading ? (
           <Spin />
@@ -80,10 +41,11 @@ const Lista = ({ open, onClose, loading, detalle, fields }) => {
                   <div key={field.key}>
                     <h4>{field.label}</h4>
                     <ul>
-                      {value.map((item) => (
-                        <li key={item.id}>
+                      {value.map((item, idx) => (
+                        <li key={item.id || idx}>
                           {field.subFields
-                            .map((sub) => `${item[sub.key] || ""}`)
+                            ?.map((sub) => item[sub.key])
+                            .filter(Boolean)
                             .join(" — ")}
                         </li>
                       ))}
@@ -102,47 +64,6 @@ const Lista = ({ open, onClose, loading, detalle, fields }) => {
           <p>No hay datos disponibles.</p>
         )}
       </Card>
-
-      {/* Card de Historia Clínica */}
-      {showHistoria && historia && (
-        <Card
-          title="Historia Clínica"
-          style={{
-            width: 600,
-            maxHeight: "80vh",
-            overflowY: "auto",
-            position: "absolute",
-            zIndex: 1100,
-          }}
-          onClick={(e) => e.stopPropagation()}
-          extra={
-            <Button size="small" onClick={() => setShowHistoria(false)}>
-              X
-            </Button>
-          }
-        >
-          {historia.turnos.map((t) => (
-            <Card
-              key={t.id}
-              size="small"
-              title={`${t.especialidad} - ${new Date(
-                t.fecha
-              ).toLocaleDateString()}`}
-              style={{ marginBottom: 12 }}
-            >
-              <p>Estado: {t.estado}</p>
-              <h4>Notas:</h4>
-              <ul>
-                {t.notas.map((n) => (
-                  <li key={n.id}>
-                    {new Date(n.fecha).toLocaleString()} — {n.texto}
-                  </li>
-                ))}
-              </ul>
-            </Card>
-          ))}
-        </Card>
-      )}
     </div>
   )
 }

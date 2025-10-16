@@ -34,7 +34,7 @@ const Dashboard = () => {
     <Layout style={{ minHeight: "100vh", width: "100vw" }}>
       {/* Sidebar */}
       <Sider width={200} style={{ background: "#fff", paddingTop: "40px" }}>
-        <Menu mode="inline" defaultSelectedKeys={["pacientes"]} style={{ height: "100%" }}>
+        <Menu mode="inline" defaultSelectedKeys={["inicio"]} style={{ height: "100%" }}>
           <Menu.Item key="inicio" icon={<FileTextOutlined />}>
             <Link to="inicio">Inicio</Link>
           </Menu.Item>
@@ -47,11 +47,22 @@ const Dashboard = () => {
           <Menu.Item key="calendario" icon={<CalendarOutlined />}>
             <Link to="calendario">Calendario</Link>
           </Menu.Item>
-          <Menu.Item key="solicitudes" icon={<FileTextOutlined />}>
-            <Link to="solicitudes">Solicitudes</Link>
-          </Menu.Item>
+
+          {/* Submenú Solicitudes */}
+          <Menu.SubMenu key="solicitudes" icon={<FileTextOutlined />} title="Solicitudes">
+            <Menu.Item key="solicitudes/recetas">
+              <Link to="recetas">Recetas</Link>
+            </Menu.Item>
+            <Menu.Item key="solicitudes/reintegros">
+              <Link to="reintegros">Reintegros</Link>
+            </Menu.Item>
+            <Menu.Item key="solicitudes/autorizaciones">
+              <Link to="autorizaciones">Autorizaciones</Link>
+            </Menu.Item>
+          </Menu.SubMenu>
         </Menu>
       </Sider>
+      
 
       {/* Contenido */}
       <Layout style={{ padding: "24px", background: "#f0f2f5" }}>

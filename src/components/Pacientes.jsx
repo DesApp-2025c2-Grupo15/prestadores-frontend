@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react"
-import { Table, Button } from "antd"
-import { EyeOutlined } from "@ant-design/icons"
-import { getAfiliados, getAfiliadoById } from "../services/afiliados"
+import { Table, Button, Card, Spin } from "antd"
+import { EyeOutlined, FileTextOutlined } from "@ant-design/icons"
+import { getAfiliados, getAfiliadoById, getHistoriaClinica } from "../services/afiliados"
 import Lista from "./Lista"
 
 const Pacientes = () => {
@@ -9,9 +9,15 @@ const Pacientes = () => {
   const [loading, setLoading] = useState(false)
   const [detalle, setDetalle] = useState(null)
   const [open, setOpen] = useState(false)
-  const [selectedRowKeys, setSelectedRowKeys] = useState([])
+  const [historia, setHistoria] = useState(null)
+  const [showHistoria, setShowHistoria] = useState(false)
+  const [loadingHistoria, setLoadingHistoria] = useState(false)
 
-  const [pagination, setPagination] = useState({ current: 1, pageSize: 10, total: 0 })
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 10,
+    total: 0,
+  })
 
   useEffect(() => {
     fetchData(pagination.current, pagination.pageSize)
@@ -33,6 +39,7 @@ const Pacientes = () => {
   const showDetalle = async (id) => {
     try {
       setLoading(true)
+      setDetalle(null)
       const result = await getAfiliadoById(id)
       setDetalle(result)
       setOpen(true)
@@ -43,11 +50,29 @@ const Pacientes = () => {
     }
   }
 
+  const fetchHistoriaClinica = async () => {
+    if (!detalle?.id) return
+    try {
+      setLoadingHistoria(true)
+      const data = await getHistoriaClinica(detalle.id)
+      setHistoria(data)
+      setShowHistoria(true)
+    } catch (err) {
+      console.error("Error al traer historia clínica:", err)
+    } finally {
+      setLoadingHistoria(false)
+    }
+  }
+
   const columns = [
     { title: "DNI", dataIndex: "dni", key: "dni" },
-    { title: "Nombre", render: (_, record) => `${record.nombre} ${record.apellido}`, key: "nombre" },
+    {
+      title: "Nombre",
+      render: (_, record) => `${record.nombre} ${record.apellido}`,
+      key: "nombre",
+    },
     { title: "Plan Médico", dataIndex: "planMedico", key: "planMedico" },
-    { title: "Titular", dataIndex: "titular", key: "titular", render: val => (val ? "Sí" : "No") },
+    { title: "Titular", dataIndex: "titular", key: "titular", render: (val) => (val ? "Sí" : "No") },
     {
       title: "Detalle",
       key: "detalle",
@@ -56,14 +81,6 @@ const Pacientes = () => {
       ),
     },
   ]
-
-  const rowSelection = {
-    selectedRowKeys,
-    onChange: (keys) => {
-      setSelectedRowKeys(keys)
-      console.log("Filas seleccionadas:", keys)
-    },
-  }
 
   const handleTableChange = (pag) => {
     setPagination(pag)
@@ -87,7 +104,6 @@ const Pacientes = () => {
           pageSizeOptions: ["5", "10", "20", "50"],
         }}
         onChange={handleTableChange}
-        rowSelection={rowSelection}
         bordered
       />
 
@@ -96,6 +112,7 @@ const Pacientes = () => {
         onClose={() => setOpen(false)}
         loading={loading}
         detalle={detalle}
+        title="Detalle del Afiliado"
         fields={[
           { key: "nroAfiliado", label: "Nro Afiliado" },
           { key: "dni", label: "DNI" },
@@ -118,6 +135,66 @@ const Pacientes = () => {
           },
         ]}
       />
+
+      {/* Botón de Historia Clínica flotante cuando hay detalle abierto */}
+      {open && (
+        <Button
+          icon={<FileTextOutlined />}
+          style={{
+            position: "fixed",
+            bottom: 40,
+            right: 40,
+            backgroundColor: "#444",
+            color: "#fff",
+            border: "none",
+          }}
+          onClick={fetchHistoriaClinica}
+          loading={loadingHistoria}
+        >
+          Ver Historia Clínica
+        </Button>
+      )}
+
+      {/* Card de Historia Clínica */}
+      {showHistoria && historia && (
+        <Card
+          title="Historia Clínica"
+          style={{
+            width: 600,
+            maxHeight: "80vh",
+            overflowY: "auto",
+            position: "fixed",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            zIndex: 1100,
+          }}
+          extra={
+            <Button size="small" onClick={() => setShowHistoria(false)}>
+              X
+            </Button>
+          }
+        >
+          {historia.turnos.map((t) => (
+            <Card
+              key={t.id}
+              size="small"
+              title={`${t.especialidad} - ${new Date(t.fecha).toLocaleDateString()}`}
+              style={{ marginBottom: 12 }}
+            >
+              <p>Estado: {t.estado}</p>
+              <h4>Notas:</h4>
+              <ul>
+                {t.notas.map((n) => (
+                  <li key={n.id}>
+                    {new Date(n.fecha).toLocaleString()} — {n.texto}
+                  </li>
+                ))}
+              </ul>
+            </Card>
+          ))}
+        </Card>
+      )}
     </div>
   )
 }
