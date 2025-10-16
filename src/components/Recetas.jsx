@@ -48,13 +48,13 @@ const Recetas = () => {
     { title: "Dosis", dataIndex: "dosis", key: "dosis" },
     { title: "Estado", dataIndex: "estado", render: e => <Tag color={color[e]}>{e}</Tag> },
     { title: "Fecha", dataIndex: "fechaCreacion", key: "fechaCreacion"},
-    {
+    /*{
           title: "Detalle",
           key: "detalle",
           render: (_, record) => (
             <Button type="text" icon={<EyeOutlined />} onClick={() => showDetalle(record.id)} />
           ),
-        },
+        },*/
       ]
 
   return (
