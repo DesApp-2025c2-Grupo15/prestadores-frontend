@@ -12,7 +12,6 @@ import Reintegros from "./components/Reintegros"
 import Autorizaciones from "./components/Autorizaciones"
 import Situaciones from "./components/Situaciones"
 
-
 function App() {
   return (
     <Router>
