@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react"
-import { Table, Button, Card, Spin } from "antd"
+import { Table, Button, Card, message, Modal } from "antd"
 import { EyeOutlined, FileTextOutlined } from "@ant-design/icons"
-import { getAfiliados, getAfiliadoById, getHistoriaClinica } from "../services/afiliados"
+import { getAfiliados, getAfiliadoById, getHistoriaClinica, getAfiliadoByDni } from "../services/afiliados"
 import Lista from "./Lista"
 
 const Pacientes = () => {
@@ -12,6 +12,7 @@ const Pacientes = () => {
   const [historia, setHistoria] = useState(null)
   const [showHistoria, setShowHistoria] = useState(false)
   const [loadingHistoria, setLoadingHistoria] = useState(false)
+  const [loadingDetalle, setLoadingDetalle] = useState(false)
 
   const [pagination, setPagination] = useState({
     current: 1,
@@ -21,44 +22,124 @@ const Pacientes = () => {
 
   useEffect(() => {
     fetchData(pagination.current, pagination.pageSize)
+    // eslint-disable-next-line
   }, [])
 
-  const fetchData = async (page, pageSize) => {
+  const fetchData = async (page = 1, pageSize = 10) => {
     try {
       setLoading(true)
-      const result = await getAfiliados()
-      setData(result)
-      setPagination({ ...pagination, total: result.length })
+      const result = await getAfiliados({ page: page - 1, size: pageSize })
+      if (result?.items) {
+        setData(result.items)
+        setPagination((p) => ({ ...p, total: result.total ?? p.total, current: page, pageSize }))
+      } else if (Array.isArray(result)) {
+        setData(result)
+        setPagination((p) => ({ ...p, total: result.length, current: page, pageSize }))
+      } else {
+        setData([])
+      }
     } catch (error) {
       console.error("Error al traer afiliados:", error)
+      message.error("No se pudieron cargar los afiliados")
+      setData([])
     } finally {
       setLoading(false)
     }
   }
 
   const showDetalle = async (id) => {
+    setDetalle(null)
     try {
-      setLoading(true)
-      setDetalle(null)
-      const result = await getAfiliadoById(id)
-      setDetalle(result)
+      setLoadingDetalle(true)
+
+      // intento por id (getAfiliadoById devuelve null si 404 en services)
+      let result = await getAfiliadoById(id)
+
+      // fallback: buscar por dni en la lista local si no hay detalle por id
+      if (!result) {
+        const local = data.find((it) => Number(it.id) === Number(id))
+        if (local?.dni) {
+          result = await getAfiliadoByDni(local.dni)
+        }
+        // si aún no hay detalle, construir mínimo desde la fila para mostrar algo
+        if (!result && local) {
+          result = {
+            id: local.id,
+            dni: local.dni,
+            nombre: local.nombre,
+            apellido: local.apellido,
+            planMedico: local.planMedico,
+            grupoFamiliar: [],
+          }
+        }
+      }
+
+      if (!result) {
+        message.error(`Detalle no disponible para afiliado ${id}`)
+        return
+      }
+
+      const normalized = {
+        ...result,
+        grupoFamiliar: Array.isArray(result?.grupoFamiliar)
+          ? result.grupoFamiliar
+          : result?.grupoFamiliar
+          ? [result.grupoFamiliar]
+          : [],
+        historialCambios: result.historial || result.historialCambios || [],
+        afiliado: result.afiliado || {},
+      }
+
+      setDetalle(normalized)
       setOpen(true)
     } catch (error) {
       console.error("Error al traer detalle:", error)
+      message.error("No se pudo cargar el detalle")
     } finally {
-      setLoading(false)
+      setLoadingDetalle(false)
     }
   }
 
-  const fetchHistoriaClinica = async () => {
-    if (!detalle?.id) return
+  const handleFetchHistoriaAndOpen = async () => {
+    console.log("Fetch historia clínica para detalle:", detalle)
+    if (!detalle?.id) {
+      message.info("Abre detalle del afiliado antes de ver la historia clínica")
+      return
+    }
+
     try {
       setLoadingHistoria(true)
-      const data = await getHistoriaClinica(detalle.id)
-      setHistoria(data)
+
+      // debug: registrar URL que se va a pedir
+      const urlDebug = `http://localhost:8080/v1/prestadores/afiliados/${detalle.id}/historia-clinica`
+      console.log("GET", urlDebug)
+
+      const dataHist = await getHistoriaClinica(detalle.id)
+      console.log("Respuesta getHistoriaClinica:", dataHist)
+
+      if (!dataHist) {
+        // abrir modal aunque no haya datos para mostrar mensaje dentro
+        setHistoria(null)
+        setShowHistoria(true)
+        return
+      }
+
+      const normalized = {
+        turnos: dataHist.turnos ?? dataHist.Turnos ?? dataHist.turnosList ?? [],
+        ...dataHist,
+      }
+
+      // abrir modal aunque no haya turnos, para que el user vea el mensaje dentro
+      setHistoria(normalized)
       setShowHistoria(true)
     } catch (err) {
       console.error("Error al traer historia clínica:", err)
+      const status = err?.response?.status
+      if (status) {
+        message.error(`Error al obtener historia clínica (HTTP ${status})`)
+      } else {
+        message.error("Error al obtener historia clínica")
+      }
     } finally {
       setLoadingHistoria(false)
     }
@@ -110,7 +191,7 @@ const Pacientes = () => {
       <Lista
         open={open}
         onClose={() => setOpen(false)}
-        loading={loading}
+        loading={loadingDetalle}
         detalle={detalle}
         title="Detalle del Afiliado"
         fields={[
@@ -127,55 +208,36 @@ const Pacientes = () => {
             key: "grupoFamiliar",
             label: "Grupo Familiar",
             subFields: [
-              { key: "nombre" },
-              { key: "apellido" },
-              { key: "dni" },
-              { key: "planMedico" },
+              { key: "nombre", label: "Nombre" },
+              { key: "apellido", label: "Apellido" },
+              { key: "dni", label: "DNI" },
+              { key: "planMedico", label: "Plan Médico" },
             ],
           },
         ]}
-      />
+      >
+        {/* botón solo para Pacientes, se pasa como children a Lista */}
+        <div style={{ marginTop: 12, textAlign: "right" }}>
+          <Button
+            icon={<FileTextOutlined />}
+            onClick={handleFetchHistoriaAndOpen}
+            loading={loadingHistoria}
+          >
+            Ver Historia Clínica
+          </Button>
+        </div>
+      </Lista>
 
-      {/* Botón de Historia Clínica flotante cuando hay detalle abierto */}
-      {open && (
-        <Button
-          icon={<FileTextOutlined />}
-          style={{
-            position: "fixed",
-            bottom: 40,
-            right: 40,
-            backgroundColor: "#444",
-            color: "#fff",
-            border: "none",
-          }}
-          onClick={fetchHistoriaClinica}
-          loading={loadingHistoria}
-        >
-          Ver Historia Clínica
-        </Button>
-      )}
-
-      {/* Card de Historia Clínica */}
-      {showHistoria && historia && (
-        <Card
-          title="Historia Clínica"
-          style={{
-            width: 600,
-            maxHeight: "80vh",
-            overflowY: "auto",
-            position: "fixed",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            zIndex: 1100,
-          }}
-          extra={
-            <Button size="small" onClick={() => setShowHistoria(false)}>
-              X
-            </Button>
-          }
-        >
-          {historia.turnos.map((t) => (
+      <Modal
+        open={showHistoria}
+        title="Historia Clínica"
+        footer={null}
+        onCancel={() => setShowHistoria(false)}
+        width={700}
+        bodyStyle={{ maxHeight: "70vh", overflowY: "auto" }}
+      >
+        {Array.isArray(historia?.turnos) && historia.turnos.length > 0 ? (
+          historia.turnos.map((t) => (
             <Card
               key={t.id}
               size="small"
@@ -185,16 +247,18 @@ const Pacientes = () => {
               <p>Estado: {t.estado}</p>
               <h4>Notas:</h4>
               <ul>
-                {t.notas.map((n) => (
-                  <li key={n.id}>
+                {(Array.isArray(t.notas) ? t.notas : []).map((n) => (
+                  <li key={n.id || n.fecha}>
                     {new Date(n.fecha).toLocaleString()} — {n.texto}
                   </li>
                 ))}
               </ul>
             </Card>
-          ))}
-        </Card>
-      )}
+          ))
+        ) : (
+          <p>No hay historia clínica disponible.</p>
+        )}
+      </Modal>
     </div>
   )
 }
