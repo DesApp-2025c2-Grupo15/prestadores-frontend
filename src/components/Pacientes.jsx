@@ -110,42 +110,34 @@ const Pacientes = () => {
     try {
       setLoadingHistoria(true)
 
-      // debug: registrar URL que se va a pedir
-      const urlDebug = `http://localhost:8080/v1/prestadores/afiliados/${detalle.id}/historia-clinica`
-      console.log("GET", urlDebug)
-
       const dataHist = await getHistoriaClinica(detalle.id)
       console.log("Respuesta getHistoriaClinica:", dataHist)
 
       if (!dataHist) {
-        // abrir modal aunque no haya datos para mostrar mensaje dentro
         setHistoria(null)
         setShowHistoria(true)
         return
       }
 
       const normalized = {
-        turnos: dataHist.turnos ?? dataHist.Turnos ?? dataHist.turnosList ?? [],
+      turnos: (dataHist.turnos ?? dataHist.Turnos ?? dataHist.turnosList ?? []).map(turno => ({
+        ...turno,
+        notas: turno.notas ?? turno.Notas ?? [] 
+      })),
         ...dataHist,
       }
-
-      // abrir modal aunque no haya turnos, para que el user vea el mensaje dentro
       setHistoria(normalized)
       setShowHistoria(true)
     } catch (err) {
       console.error("Error al traer historia clínica:", err)
-      const status = err?.response?.status
-      if (status) {
-        message.error(`Error al obtener historia clínica (HTTP ${status})`)
-      } else {
-        message.error("Error al obtener historia clínica")
-      }
+      message.error("Error al obtener historia clínica")
     } finally {
       setLoadingHistoria(false)
     }
   }
 
   const columns = [
+    { title: "ID", dataIndex: "id", key: "id" },
     { title: "DNI", dataIndex: "dni", key: "dni" },
     {
       title: "Nombre",
