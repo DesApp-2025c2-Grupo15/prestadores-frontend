@@ -32,7 +32,6 @@ const Situaciones = () => {
   const [afiliados, setAfiliados] = useState([])
   const [filtered, setFiltered] = useState([])
   const [loading, setLoading] = useState(false)
-  const [search, setSearch] = useState("")
 
   const [expandedRowKeys, setExpandedRowKeys] = useState([])
 
@@ -82,20 +81,6 @@ const Situaciones = () => {
     setLoading(false)
   }
 }
-
-  useEffect(() => {
-    const q = String(search || "").trim().toLowerCase()
-    if (!q) return setFiltered(afiliados)
-    const filteredList = afiliados.filter((a) => {
-      return (
-        String(a.id ?? a.afiliadoId ?? "").toLowerCase().includes(q) ||
-        (a.apellido ?? "").toLowerCase().includes(q) ||
-        (a.telefono ?? "").toLowerCase().includes(q) ||
-        (a.nombre ?? "").toLowerCase().includes(q)
-      )
-    })
-    setFiltered(filteredList)
-  }, [search, afiliados])
 
   const normalizeResponse = (resp, afiliadoId) => {
     if (!resp) return { items: [], grupoFamiliar: [] }
@@ -373,21 +358,6 @@ const Situaciones = () => {
   return (
     <div style={{ padding: 16 }}>
       <h3 style={{ marginBottom: 8 }}>Gestión de situaciones terapéuticas</h3>
-
-      <Card style={{ marginBottom: 12 }}>
-        <Space style={{ width: "100%", justifyContent: "space-between" }}>
-          <Input.Search
-            placeholder="Buscar por nro afiliado / apellido / teléfono"
-            enterButton
-            onSearch={(v) => setSearch(v)}
-            style={{ width: 500 }}
-            allowClear
-          />
-          <Button type="primary" onClick={loadAfiliados}>
-            Actualizar afiliados
-          </Button>
-        </Space>
-      </Card>
 
      <Table
         rowKey="id"
