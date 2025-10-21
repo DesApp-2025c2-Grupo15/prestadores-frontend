@@ -2,7 +2,6 @@ import React from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom"
 import Login from "./components/LogIn"
 import Dashboard from "./components/Dashboard"
-import Solicitudes from "./components/Solicitudes"
 import Pacientes from "./components/Pacientes"
 import TurnosPendientes from "./components/TurnosPendientes"
 import Calendario from "./components/Calendario"
@@ -24,7 +23,6 @@ function App() {
           <Route index element={<Inicio />} /> 
           <Route path="inicio" element={<Inicio />} />
           <Route path="pacientes" element={<Pacientes />} />
-          <Route path="solicitudes" element={<Solicitudes />} />
           <Route path="turnospendientes" element={<TurnosPendientes />} />
           <Route path="calendario" element={<Calendario />} />
           <Route path="recetas" element={<Recetas />} />
