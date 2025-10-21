@@ -1,22 +1,22 @@
 import React, { useEffect } from "react"
-import { Modal, Form, Input, Select, DatePicker, InputNumber, Checkbox, Switch } from "antd"
+import { Modal, Form, Input, Select, DatePicker, InputNumber, Checkbox, Switch, Grid } from "antd"
 import dayjs from "dayjs"
 
 const { TextArea } = Input
 const { Option } = Select
+const { useBreakpoint } = Grid
 
 // field: { name, label, type, rules?, props?, options? }
 // type: "text"|"textarea"|"select"|"date"|"number"|"checkbox"|"switch"
 const EditorModal = ({ open, onClose, initialValues = {}, fields = [], onSave, onDelete, mode = "create", title }) => {
   const [form] = Form.useForm()
+  const screens = useBreakpoint()
 
   useEffect(() => {
     form.resetFields()
-    // convertir campos date a dayjs antes de setear en el form (Antd v5 usa dayjs)
     const vals = { ...initialValues }
     fields.forEach((f) => {
       if (f.type === "date" && vals[f.name]) {
-        // acepta ISO string, Date o dayjs
         vals[f.name] = dayjs(vals[f.name])
       }
     })
@@ -27,7 +27,7 @@ const EditorModal = ({ open, onClose, initialValues = {}, fields = [], onSave, o
     const common = { name: f.name, label: f.label, rules: f.rules || [] }
     const props = f.props || {}
 
-    switch ((f.type || "text")) {
+    switch (f.type || "text") {
       case "textarea":
         return (
           <Form.Item key={f.name} {...common}>
@@ -49,7 +49,7 @@ const EditorModal = ({ open, onClose, initialValues = {}, fields = [], onSave, o
       case "date":
         return (
           <Form.Item key={f.name} {...common}>
-            <DatePicker showTime {...props} />
+            <DatePicker showTime style={{ width: "100%" }} {...props} />
           </Form.Item>
         )
       case "number":
@@ -82,17 +82,15 @@ const EditorModal = ({ open, onClose, initialValues = {}, fields = [], onSave, o
   const handleOk = async () => {
     try {
       const values = await form.validateFields()
-      // normalizar fechas dayjs a ISO string
       const normalized = { ...values }
       fields.forEach((f) => {
         if (f.type === "date" && normalized[f.name]) {
-          // dayjs.toISOString() existe
           normalized[f.name] = normalized[f.name].toISOString()
         }
       })
       onSave && onSave(normalized)
       onClose && onClose()
-    } catch (e) {
+    } catch {
       // validation errors - no action
     }
   }
@@ -105,6 +103,9 @@ const EditorModal = ({ open, onClose, initialValues = {}, fields = [], onSave, o
       onOk={handleOk}
       okText={mode === "create" ? "Crear" : "Guardar"}
       destroyOnClose
+      centered
+      width={screens.xs ? "95%" : 600}
+      bodyStyle={{ maxHeight: "70vh", overflowY: "auto", paddingRight: 8 }}
     >
       <Form layout="vertical" form={form}>
         {fields.map((f) => renderField(f))}

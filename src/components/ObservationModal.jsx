@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from "react"
-import { Modal, Form, Radio, Input, Button, Space } from "antd"
+import { Modal, Form, Radio, Input, Button, Space, Grid } from "antd"
 
 const { TextArea } = Input
+const { useBreakpoint } = Grid
 
-// props:
-// open, onClose, onConfirm({ estado, motivo }), defaultEstado?
+// props: open, onClose, onConfirm({ estado, motivo }), defaultEstado?
 const ObservationModal = ({ open, onClose, onConfirm, defaultEstado = "OBSERVADO", options = null }) => {
   const [form] = Form.useForm()
   const [submitting, setSubmitting] = useState(false)
+  const screens = useBreakpoint()
 
-  // Opciones por defecto (etiquetas amigables)
   const estadoOptions = options ?? [
     { value: "APROBADO", label: "Aceptado" },
     { value: "RECHAZADO", label: "Rechazado" },
@@ -29,8 +29,7 @@ const ObservationModal = ({ open, onClose, onConfirm, defaultEstado = "OBSERVADO
       await Promise.resolve(onConfirm ? onConfirm(values) : null)
       setSubmitting(false)
       onClose && onClose()
-    } catch (e) {
-      // validation errors
+    } catch {
       setSubmitting(false)
     }
   }
@@ -42,9 +41,20 @@ const ObservationModal = ({ open, onClose, onConfirm, defaultEstado = "OBSERVADO
       footer={null}
       title="Observar / Rechazar"
       destroyOnClose
+      centered
+      width={screens.xs ? "95%" : 500}
+      bodyStyle={{ maxHeight: "70vh", overflowY: "auto", paddingRight: 8 }}
     >
-      <Form form={form} layout="vertical" initialValues={{ estado: defaultEstado, motivo: "" }}>
-        <Form.Item label="Estado" name="estado" rules={[{ required: true, message: "Seleccioná una acción" }]}>
+      <Form
+        form={form}
+        layout="vertical"
+        initialValues={{ estado: defaultEstado, motivo: "" }}
+      >
+        <Form.Item
+          label="Estado"
+          name="estado"
+          rules={[{ required: true, message: "Seleccioná una acción" }]}
+        >
           <Radio.Group>
             <Space direction="vertical">
               {estadoOptions.map((o) => (
