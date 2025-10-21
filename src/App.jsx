@@ -17,7 +17,6 @@ function App() {
       <Routes>
         {/* Redirige automáticamente a /login al entrar a / */}
         <Route path="/" element={<Navigate to="/login" replace />} />
-
         <Route path="/login" element={<Login />} />
         <Route path="/dashboard" element={<Dashboard />}>
           <Route index element={<Inicio />} /> 
@@ -29,7 +28,6 @@ function App() {
           <Route path="reintegros" element={<Reintegros />} />
           <Route path="autorizaciones" element={<Autorizaciones />} />
           <Route path="situaciones" element={<Situaciones />} />
-
         </Route>
       </Routes>
     </Router>
