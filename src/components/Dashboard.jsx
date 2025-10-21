@@ -1,16 +1,32 @@
 import React, { useState } from "react"
-import { Layout, Menu, Input, message, Card, Space, Button } from "antd"
-import { UserOutlined, CalendarOutlined, FileTextOutlined, SearchOutlined, MedicineBoxOutlined } from "@ant-design/icons"
-import { Link, Outlet } from "react-router-dom"
+import {
+  Layout,
+  Menu,
+  Input,
+  message,
+  Card,
+  Space,
+  Button,
+  Grid,
+} from "antd"
+import {
+  UserOutlined,
+  CalendarOutlined,
+  FileTextOutlined,
+  MedicineBoxOutlined,
+} from "@ant-design/icons"
+import { Link, Outlet, useLocation } from "react-router-dom"
 import { getAfiliadoByDni } from "../services/afiliados"
 
 const { Sider, Content } = Layout
+const { useBreakpoint } = Grid
 
 const Dashboard = () => {
   const [search, setSearch] = useState("")
   const [afiliado, setAfiliado] = useState(null)
   const [loading, setLoading] = useState(false)
-  
+  const screens = useBreakpoint()
+  const location = useLocation()
 
   const handleSearch = async (value) => {
     if (!value?.trim()) {
@@ -44,32 +60,52 @@ const Dashboard = () => {
 
   return (
     <Layout style={{ minHeight: "100vh", width: "100vw" }}>
-      <Layout style={{ minHeight: "100vh" }}>
-        {/* Sidebar */}
-        <Sider  width={300} style={{ background: "#fff",marginTop: 25 ,padding: 20 }}>
-          <Menu mode="inline" defaultSelectedKeys={["inicio"]} style={{ height: "100%", border: "none" }}>
+      <Layout>
+        {/* Sidebar responsive */}
+        <Sider
+          breakpoint="md"
+          collapsedWidth="0"
+          style={{
+            background: "#fff",
+            marginTop: 25,
+            padding: 20,
+            borderRight: "1px solid #f0f0f0",
+          }}
+        >
+          <Menu
+            mode="inline"
+            defaultSelectedKeys={[location.pathname]}
+            style={{ height: "100%", border: "none" }}
+          >
             <Menu.Item key="inicio" icon={<FileTextOutlined />}>
               <Link to="inicio">Inicio</Link>
             </Menu.Item>
+
             <Menu.Item key="turnos" icon={<FileTextOutlined />}>
               <Link to="turnospendientes">Turnos Pendientes</Link>
             </Menu.Item>
+
             <Menu.Item key="pacientes" icon={<UserOutlined />}>
               <Link to="pacientes">Pacientes</Link>
             </Menu.Item>
+
+            {/* ✅ Siempre visible el acceso al calendario */}
             <Menu.Item key="calendario" icon={<CalendarOutlined />}>
               <Link to="calendario">Calendario</Link>
             </Menu.Item>
 
-            {/* Submenú Solicitudes */}
-            <Menu.SubMenu key="solicitudes" icon={<FileTextOutlined />} title="Solicitudes">
-              <Menu.Item key="solicitudes/recetas">
+            <Menu.SubMenu
+              key="solicitudes"
+              icon={<FileTextOutlined />}
+              title="Solicitudes"
+            >
+              <Menu.Item key="recetas">
                 <Link to="recetas">Recetas</Link>
               </Menu.Item>
-              <Menu.Item key="solicitudes/reintegros">
+              <Menu.Item key="reintegros">
                 <Link to="reintegros">Reintegros</Link>
               </Menu.Item>
-              <Menu.Item key="solicitudes/autorizaciones">
+              <Menu.Item key="autorizaciones">
                 <Link to="autorizaciones">Autorizaciones</Link>
               </Menu.Item>
             </Menu.SubMenu>
@@ -80,12 +116,35 @@ const Dashboard = () => {
           </Menu>
         </Sider>
 
-        {/* Contenido */}
+        {/* Contenido principal */}
         <Layout style={{ padding: "24px", background: "#f0f2f5" }}>
-          <Content style={{ padding: 24, background: "#fff", minHeight: 280 }}>
-            {/* Buscador sobre el contenido */}
-            <Card style={{ marginBottom: 16, border: "none" }}>
-              <Space style={{ width: "100%", justifyContent: "space-between" }}>
+          <Content
+            style={{
+              padding: 24,
+              background: "#fff",
+              minHeight: 280,
+              borderRadius: 8,
+            }}
+          >
+            {/* Buscador */}
+            <Card
+              style={{
+                marginBottom: 16,
+                border: "none",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+              }}
+            >
+              <Space
+                direction={screens.sm ? "horizontal" : "vertical"}
+                size="middle"
+                style={{
+                  width: "100%",
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  flexWrap: "wrap",
+                }}
+              >
                 <Input.Search
                   placeholder="Buscar por nro afiliado / apellido / teléfono"
                   enterButton="Buscar"
@@ -94,31 +153,64 @@ const Dashboard = () => {
                   onChange={(e) => setSearch(e.target.value)}
                   onSearch={handleSearch}
                   loading={loading}
-                  style={{ width: 400 }}
+                  style={{
+                    width: "100%",
+                    maxWidth: 600,
+                  }}
                   allowClear
                 />
                 {afiliado && (
-                  <Button onClick={limpiarBusqueda}>
+                  <Button
+                    onClick={limpiarBusqueda}
+                    style={{
+                      width: screens.sm ? "auto" : "100%",
+                      maxWidth: 600,
+                    }}
+                  >
                     Limpiar búsqueda
                   </Button>
                 )}
               </Space>
             </Card>
-            {/* Si hay afiliado encontrado, lo mostramos */}
-            {afiliado ? (
-              <Card 
-                title={`${afiliado.nombre} ${afiliado.apellido}`} 
-                style={{ width: 400 }}
-                extra={<Button type="link" onClick={limpiarBusqueda}>✕</Button>}
-              >
-                <p><b>DNI:</b> {afiliado.dni}</p>
-                <p><b>Plan Médico:</b> {afiliado.planMedico}</p>
-                <p><b>Titular:</b> {afiliado.titular ? "Sí" : "No"}</p>
-              </Card>
-            ) : (
-              /* Contenido normal de las rutas */
-              <Outlet />
-            )}
+
+            {/* Resultado de búsqueda o rutas */}
+            <div
+              style={{
+                display: "flex",
+                flexWrap: "wrap",
+                justifyContent: "center",
+                gap: 16,
+              }}
+            >
+              {afiliado ? (
+                <Card
+                  title={`${afiliado.nombre} ${afiliado.apellido}`}
+                  style={{
+                    flex: "1 1 300px",
+                    maxWidth: 400,
+                    minWidth: 280,
+                    boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+                  }}
+                  extra={
+                    <Button type="link" onClick={limpiarBusqueda}>
+                      ✕
+                    </Button>
+                  }
+                >
+                  <p>
+                    <b>DNI:</b> {afiliado.dni}
+                  </p>
+                  <p>
+                    <b>Plan Médico:</b> {afiliado.planMedico}
+                  </p>
+                  <p>
+                    <b>Titular:</b> {afiliado.titular ? "Sí" : "No"}
+                  </p>
+                </Card>
+              ) : (
+                <Outlet />
+              )}
+            </div>
           </Content>
         </Layout>
       </Layout>
