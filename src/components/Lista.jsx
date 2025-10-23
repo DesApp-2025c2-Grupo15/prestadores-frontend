@@ -9,10 +9,10 @@ const renderValue = (value) => {
   if (typeof value === "object") {
     return Object.entries(value)
       .map(([k, v]) => `${k}: ${v}`)
-      .join(", ");
+      .join(", ")
   }
-  return value;
-};
+  return value
+}
 
 const getColor = (estado) => {
   const map = {
@@ -21,9 +21,9 @@ const getColor = (estado) => {
     OBSERVADO: "purple",
     APROBADO: "green",
     RECHAZADO: "red",
-  };
+  }
   return map[estado] || "default";
-};
+}
 
 const Lista = ({
   open,
@@ -34,7 +34,7 @@ const Lista = ({
   title = "Detalle",
   children,
 }) => {
-  const screens = useBreakpoint();
+  const screens = useBreakpoint()
 
   return (
     <Modal

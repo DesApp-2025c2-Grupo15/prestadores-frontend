@@ -13,6 +13,8 @@ import {
   DatePicker,
   Form,
   Radio,
+  Grid,
+  Typography,
 } from "antd"
 import { EyeOutlined, EditOutlined, PlusOutlined } from "@ant-design/icons"
 import dayjs from "dayjs"
@@ -27,6 +29,8 @@ import {
 
 const { TextArea } = Input
 const { TabPane } = Tabs
+const { useBreakpoint } = Grid
+const { Title } = Typography
 
 const Situaciones = () => {
   const [afiliados, setAfiliados] = useState([])
@@ -40,14 +44,13 @@ const Situaciones = () => {
   const [situacionesData, setSituacionesData] = useState(null)
   const [loadingSituaciones, setLoadingSituaciones] = useState(false)
 
-  // controla qué pestaña está activa en el modal (clave string)
   const [activeTabKey, setActiveTabKey] = useState(null)
 
   const [altaVisible, setAltaVisible] = useState(false)
   const [editarVisible, setEditarVisible] = useState(false)
   const [bajaVisible, setBajaVisible] = useState(false)
 
-  const [activeFilter, setActiveFilter] = useState("ACTIVAS") // ACTIVAS | INACTIVAS | TODAS
+  const [activeFilter, setActiveFilter] = useState("ACTIVAS")
 
   const [contextMember, setContextMember] = useState(null)
   const [contextSituacion, setContextSituacion] = useState(null)
@@ -55,6 +58,8 @@ const Situaciones = () => {
   const [formAlta] = Form.useForm()
   const [formEditar] = Form.useForm()
   const [formBaja] = Form.useForm()
+
+  const screens = useBreakpoint()
 
   const estadoColor = {
     ACTIVA: "green",
@@ -68,19 +73,19 @@ const Situaciones = () => {
 
   const loadAfiliados = async () => {
     try {
-    setLoading(true)
-    const res = await getAfiliados()
-    const list = Array.isArray(res) ? res : res?.items ?? []
-    console.log("IDs de afiliados cargados:", list.map(a => ({ id: a.id, nombre: a.nombre, apellido: a.apellido })))
-    setAfiliados(list)
-    setFiltered(list)
-  } catch (err) {
-    console.error("Error al cargar afiliados:", err)
-    message.error("No se pudieron cargar los afiliados")
-  } finally {
-    setLoading(false)
+      setLoading(true)
+      const res = await getAfiliados()
+      const list = Array.isArray(res) ? res : res?.items ?? []
+      console.log("IDs de afiliados cargados:", list.map(a => ({ id: a.id, nombre: a.nombre, apellido: a.apellido })))
+      setAfiliados(list)
+      setFiltered(list)
+    } catch (err) {
+      console.error("Error al cargar afiliados:", err)
+      message.error("No se pudieron cargar los afiliados")
+    } finally {
+      setLoading(false)
+    }
   }
-}
 
   const normalizeResponse = (resp, afiliadoId) => {
     if (!resp) return { items: [], grupoFamiliar: [] }
@@ -107,7 +112,6 @@ const Situaciones = () => {
     return { items: resp.situaciones || resp.items || [], grupoFamiliar: resp.grupoFamiliar || [] }
   }
 
-  // unified function to open gestor; focusKey optionally sets active tab (string)
   const openGestor = async (afiliado, focusKey = null) => {
     setSelectedAfiliado(afiliado)
     setGestorOpen(true)
@@ -122,7 +126,6 @@ const Situaciones = () => {
       const norm = normalizeResponse(res, afiliado.id)
       setSituacionesData(norm)
 
-      // determine active tab: if focusKey provided use it, else default to titular
       if (focusKey) {
         setActiveTabKey(String(focusKey))
       } else {
@@ -136,7 +139,6 @@ const Situaciones = () => {
     }
   }
 
-  // original gestionar (titular view)
   const handleGestionar = (afiliado) => openGestor(afiliado)
 
   const reloadSituaciones = async () => {
@@ -144,7 +146,6 @@ const Situaciones = () => {
     await openGestor(selectedAfiliado)
   }
 
-  // CREATE (añadir)
   const openAlta = (member) => {
     setContextMember(member)
     formAlta.resetFields()
@@ -170,7 +171,6 @@ const Situaciones = () => {
     }
   }
 
-  // UPDATE fecha fin
   const openEditar = (member, situacion) => {
     setContextMember(member)
     setContextSituacion(situacion)
@@ -200,7 +200,6 @@ const Situaciones = () => {
     }
   }
 
-  // DAR DE BAJA (soft)
   const openBaja = (member, situacion) => {
     setContextMember(member)
     setContextSituacion(situacion)
@@ -223,7 +222,6 @@ const Situaciones = () => {
     }
   }
 
-  // DAR DE ALTA (reactivar)
   const handleReactivar = async (member, situacion) => {
     try {
       const afiliadoId = member?.afiliadoId ?? selectedAfiliado?.id
@@ -237,29 +235,27 @@ const Situaciones = () => {
   }
   
   const toggleExpand = async (id) => {
-  if (expandedRowKeys.includes(id)) {
-    // Contraer
-    setExpandedRowKeys((prev) => prev.filter((key) => key !== id))
-  } else {
-    // Expandir - cargar grupo familiar
-    try {
-      const res = await getSituacionesByAfiliado(id, "grupo")
-      const norm = normalizeResponse(res, id)
-      
-      // Actualizar el afiliado en la lista con los datos del grupo
-      setFiltered(prev => prev.map(afiliado => 
-        afiliado.id === id 
-          ? { ...afiliado, grupoFamiliar: norm.grupoFamiliar }
-          : afiliado
-      ))
-      
-      setExpandedRowKeys((prev) => [...prev, id])
-    } catch (err) {
-      console.error("Error cargar grupo familiar:", err)
-      message.error("Error al cargar grupo familiar")
+    if (expandedRowKeys.includes(id)) {
+      setExpandedRowKeys((prev) => prev.filter((key) => key !== id))
+    } else {
+      try {
+        const res = await getSituacionesByAfiliado(id, "grupo")
+        const norm = normalizeResponse(res, id)
+        
+        setFiltered(prev => prev.map(afiliado => 
+          afiliado.id === id 
+            ? { ...afiliado, grupoFamiliar: norm.grupoFamiliar }
+            : afiliado
+        ))
+        
+        setExpandedRowKeys((prev) => [...prev, id])
+      } catch (err) {
+        console.error("Error cargar grupo familiar:", err)
+        message.error("Error al cargar grupo familiar")
+      }
     }
   }
-}
+
   const tabs = useMemo(() => {
     if (!situacionesData) return []
     const titular = {
@@ -356,34 +352,51 @@ const Situaciones = () => {
   ]
 
   return (
-    <div style={{ padding: 16 }}>
-      <h3 style={{ marginBottom: 8 }}>Gestión de situaciones terapéuticas</h3>
-
-     <Table
-        rowKey="id"
-        columns={afiliadosColumns}
-        dataSource={filtered}
-        loading={loading}
-        pagination={{ pageSize: 10 }}
-        bordered
-        expandable={{
-          expandedRowRender: (afiliado) =>
-            afiliado.grupoFamiliar && afiliado.grupoFamiliar.length > 0 ? (
-              <ul style={{ margin: 0, paddingLeft: 20 }}>
-                {afiliado.grupoFamiliar.map((miembro) => (
-                  <li key={miembro.afiliadoId ?? miembro.id}>
-                    {miembro.nombre} {miembro.apellido} – {miembro.parentesco ?? miembro.relacion}
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p style={{ margin: 0 }}>No tiene grupo familiar registrado.</p>
-            ),
-          expandedRowKeys,
-          onExpand: (expanded, record) => toggleExpand(record.id),
-          showExpandColumn: false,
+    <div style={{
+      padding: screens.sm ? 24 : 12,
+      width: "100%",
+    }}>
+      <Card
+        bordered={false}
+        style={{
+          borderRadius: 8,
+          boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
         }}
-      />
+      >
+        <Title level={4} style={{ marginBottom: 16 }}>
+          Gestión de situaciones terapéuticas
+        </Title>
+
+        <div style={{ overflowX: "auto" }}>
+          <Table
+            rowKey="id"
+            columns={afiliadosColumns}
+            dataSource={filtered}
+            loading={loading}
+            pagination={{ pageSize: 10 }}
+            bordered
+            scroll={{ x: "max-content" }}
+            style={{ width: "100%" }}
+            expandable={{
+              expandedRowRender: (afiliado) =>
+                afiliado.grupoFamiliar && afiliado.grupoFamiliar.length > 0 ? (
+                  <ul style={{ margin: 0, paddingLeft: 20 }}>
+                    {afiliado.grupoFamiliar.map((miembro) => (
+                      <li key={miembro.afiliadoId ?? miembro.id}>
+                        {miembro.nombre} {miembro.apellido} – {miembro.parentesco ?? miembro.relacion}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p style={{ margin: 0 }}>No tiene grupo familiar registrado.</p>
+                ),
+              expandedRowKeys,
+              onExpand: (expanded, record) => toggleExpand(record.id),
+              showExpandColumn: false,
+            }}
+          />
+        </div>
+      </Card>
 
       <Modal
         open={gestorOpen}
@@ -424,7 +437,6 @@ const Situaciones = () => {
               ))}
             </Tabs>
             
-{/* Situaciones del grupo familiar */}
             {situacionesData?.grupoFamiliar && situacionesData.grupoFamiliar.length > 0 && (
               <>
                 <h4 style={{ marginTop: 16 }}>Grupo Familiar</h4>
@@ -444,12 +456,10 @@ const Situaciones = () => {
                 ))}
               </>
             )}
-
           </>
         )}
       </Modal>
 
-      {/* Modal Alta */}
       <Modal title="Añadir situación terapéutica" open={altaVisible} onCancel={() => setAltaVisible(false)} onOk={submitAlta} destroyOnClose>
         <Form layout="vertical" form={formAlta}>
           <Form.Item name="descripcion" label="Diagnóstico / Descripción" rules={[{ required: true, message: "Ingrese descripción" }]}>
@@ -464,7 +474,6 @@ const Situaciones = () => {
         </Form>
       </Modal>
 
-      {/* Modal Editar fecha fin */}
       <Modal title="Modificar fecha de fin" open={editarVisible} onCancel={() => setEditarVisible(false)} onOk={submitEditar} destroyOnClose>
         <Form layout="vertical" form={formEditar}>
           <Form.Item name="nuevaFechaFin" label="Nueva fecha de fin" rules={[{ required: true, message: "Ingrese nueva fecha de fin" }]}>
@@ -476,7 +485,6 @@ const Situaciones = () => {
         </Form>
       </Modal>
 
-      {/* Modal Dar de baja (confirmación + motivo opcional) */}
       <Modal title="Dar de baja situación" open={bajaVisible} onCancel={() => setBajaVisible(false)} onOk={submitBaja} okText="Confirmar baja" destroyOnClose>
         <p>Confirma dar de baja la situación seleccionada? (Esta acción es reversible mediante reactivación)</p>
         <Form layout="vertical" form={formBaja}>
