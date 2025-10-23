@@ -14,6 +14,8 @@ import {
   CalendarOutlined,
   FileTextOutlined,
   MedicineBoxOutlined,
+  HomeOutlined,
+  ClockCircleOutlined, 
 } from "@ant-design/icons"
 import { Link, Outlet, useLocation } from "react-router-dom"
 import { getAfiliadoByDni } from "../services/afiliados"
@@ -65,10 +67,11 @@ const Dashboard = () => {
         <Sider
           breakpoint="md"
           collapsedWidth="0"
+          width={280}
           style={{
             background: "#fff",
             marginTop: 25,
-            padding: 20,
+            padding: 10,
             borderRight: "1px solid #f0f0f0",
           }}
         >
@@ -77,11 +80,11 @@ const Dashboard = () => {
             defaultSelectedKeys={[location.pathname]}
             style={{ height: "100%", border: "none" }}
           >
-            <Menu.Item key="inicio" icon={<FileTextOutlined />}>
+            <Menu.Item key="inicio" icon={<HomeOutlined />}>
               <Link to="inicio">Inicio</Link>
             </Menu.Item>
 
-            <Menu.Item key="turnos" icon={<FileTextOutlined />}>
+            <Menu.Item key="turnos" icon={<ClockCircleOutlined />}>
               <Link to="turnospendientes">Turnos Pendientes</Link>
             </Menu.Item>
 
@@ -132,17 +135,20 @@ const Dashboard = () => {
                 marginBottom: 16,
                 border: "none",
                 boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+                width: "100%",
+                padding: "16px 24px",
               }}
             >
               <Space
-                direction={screens.sm ? "horizontal" : "vertical"}
-                size="middle"
+                direction="horizontal"
+                size="large"
                 style={{
                   width: "100%",
                   display: "flex",
-                  justifyContent: "center",
+                  justifyContent: "space-between",
                   alignItems: "center",
                   flexWrap: "wrap",
+                  gap: "16px",
                 }}
               >
                 <Input.Search
@@ -154,17 +160,19 @@ const Dashboard = () => {
                   onSearch={handleSearch}
                   loading={loading}
                   style={{
-                    width: "100%",
-                    maxWidth: 600,
+                    flex: 1, 
+                    minWidth: 400, 
+                    maxWidth: 800,
                   }}
                   allowClear
                 />
                 {afiliado && (
                   <Button
                     onClick={limpiarBusqueda}
+                    size="large"
                     style={{
-                      width: screens.sm ? "auto" : "100%",
-                      maxWidth: 600,
+                      flexShrink: 0,
+                      minWidth: 120,
                     }}
                   >
                     Limpiar búsqueda
